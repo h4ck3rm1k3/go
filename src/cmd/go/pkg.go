@@ -351,14 +351,16 @@ func disallowInternal(srcDir string, p *Package, stk *importStack) *Package {
 		return p
 	}
 
-	// Internal is present, and srcDir is outside parent's tree. Not allowed.
-	perr := *p
-	perr.Error = &PackageError{
-		ImportStack: stk.copy(),
-		Err:         "use of internal package not allowed",
-	}
-	perr.Incomplete = true
-	return &perr
+	return p
+
+	// // Internal is present, and srcDir is outside parent's tree. Not allowed.
+	// perr := *p
+	// perr.Error = &PackageError{
+	// 	ImportStack: stk.copy(),
+	// 	Err:         "use of internal package not allowed",
+	// }
+	// perr.Incomplete = true
+	// return &perr
 }
 
 // findInternal looks for the final "internal" path element in the given import path.

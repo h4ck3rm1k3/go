@@ -1377,7 +1377,7 @@ func init() {
 }
 
 // ToolDir is the directory containing build tools.
-var ToolDir = filepath.Join(runtime.GOROOT(), "pkg/tool/"+runtime.GOOS+"_"+runtime.GOARCH)
+//var ToolDir = filepath.Join(runtime.GOROOT(), "pkg/tool/"+runtime.GOOS+"_"+runtime.GOARCH)
 
 // IsLocalImport reports whether the import path is
 // a local import path, like ".", "..", "./foo", or "../foo".

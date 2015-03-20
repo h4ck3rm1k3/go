@@ -6,7 +6,7 @@ package main
 
 import (
 	"fmt"
-	"go/build"
+//	"go/build"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -34,7 +34,7 @@ var (
 	toolGOOS      = runtime.GOOS
 	toolGOARCH    = runtime.GOARCH
 	toolIsWindows = toolGOOS == "windows"
-	toolDir       = build.ToolDir
+	toolDir       = filepath.Join(runtime.GOROOT(), "pkg/tool/"+runtime.GOOS+"_"+runtime.GOARCH)
 
 	toolN bool
 )
@@ -46,7 +46,8 @@ func init() {
 const toolWindowsExtension = ".exe"
 
 func tool(toolName string) string {
-	toolPath := filepath.Join(toolDir, toolName)
+     	toolPath := filepath.Join(toolDir, toolName)
+	fmt.Fprintf(os.Stderr, "go %s:",toolDir)
 	if toolIsWindows {
 		toolPath += toolWindowsExtension
 	}

@@ -42,3 +42,13 @@ VERSION.cache
 
 bin/
 pkg/
+
+*.BACKUP.*
+*.BASE.*
+*.LOCAL.*
+*.REMOTE.*
+*\.\#*
+*\#*\#
+*.s
+/src/gocc 
+/src/unsafe/*
