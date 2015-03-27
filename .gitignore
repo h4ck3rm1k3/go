@@ -52,3 +52,5 @@ pkg/
 *.s
 /src/gocc 
 /src/unsafe/*
+/src/build.sh
+/build/src/

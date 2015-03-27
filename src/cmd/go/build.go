@@ -838,7 +838,7 @@ func (b *builder) build(a *action) (err error) {
 	}
 
 	if buildV {
-		fmt.Fprintf(os.Stderr, "%s\n", a.p.ImportPath)
+		fmt.Fprintf(os.Stderr, "#%s\n", a.p.ImportPath)
 	}
 
 	if a.p.Standard && a.p.ImportPath == "runtime" && buildContext.Compiler == "gc" && archChar() != "" &&
@@ -1302,6 +1302,7 @@ func isObject(s string) bool {
 //
 func (b *builder) fmtcmd(dir string, format string, args ...interface{}) string {
 	cmd := fmt.Sprintf(format, args...)
+	//fmt.Printf("#"+format+"\n", args...)
 	if dir != "" && dir != "/" {
 		cmd = strings.Replace(" "+cmd, " "+dir, " .", -1)[1:]
 		if b.scriptDir != dir {
@@ -1613,7 +1614,7 @@ func (noToolchain) linker() string {
 }
 
 func (noToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr bool, importArgs []string, gofiles []string) (ofile string, out []byte, err error) {
-	return "", nil, noCompiler()
+	return "gccgo", nil, noCompiler()
 }
 
 func (noToolchain) asm(b *builder, p *Package, obj, ofile, sfile string) error {
@@ -1925,7 +1926,9 @@ func (tools gccgoToolchain) gc(b *builder, p *Package, archive, obj string, asmh
 	if p.localPrefix != "" {
 		gcargs = append(gcargs, "-fgo-relative-import-path="+p.localPrefix)
 	}
-	args := stringList(tools.compiler(), importArgs, "-c", gcargs, "-o", ofile, buildGccgoflags)
+	var compiler = tools.compiler()
+	fmt.Printf("#COMPILER %s\n", compiler)
+	args := stringList(compiler, importArgs, "-c", gcargs, "-o", ofile, buildGccgoflags)
 	for _, f := range gofiles {
 		args = append(args, mkAbs(p.Dir, f))
 	}

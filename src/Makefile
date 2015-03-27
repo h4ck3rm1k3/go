@@ -7,7 +7,7 @@ export GOPATH := $(HOME)/go/src
 export GOROOT := $(HOME)/go
 export WORK := /tmp/gccgo/work
 
-tooldir:
+tooldir: gocc
 	echo $(GOTOOLDIR)
 	./gocc env GOTOOLDIR
 
