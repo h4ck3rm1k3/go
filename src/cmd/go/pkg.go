@@ -234,6 +234,9 @@ func makeImportValid(r rune) rune {
 // with ./ or ../).  A local relative path is interpreted relative to srcDir.
 // It returns a *Package describing the package found in that directory.
 func loadImport(path string, srcDir string, stk *importStack, importPos []token.Position) *Package {
+
+     fmt.Printf("#IMPORT %s\n",path)
+
 	stk.push(path)
 	defer stk.pop()
 
