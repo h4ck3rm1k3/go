@@ -271,7 +271,7 @@ func (v *stringsFlag) String() string {
 
 func runBuild(cmd *Command, args []string) {
 
-	//fmt.Println("runBuild %v %v", cmd, args)
+	fmt.Println("#runBuild: %v", args)
 	
 	raceInit()
 	var b builder
@@ -323,7 +323,7 @@ func runBuild(cmd *Command, args []string) {
 		a.deps = append(a.deps, b.action(modeBuild, depMode, p))
 	}
 
-	//fmt.Println("deps %v", a.deps)
+	fmt.Println("#DEPS  %v", a.deps)
 	
 	b.do(a)
 }
@@ -821,7 +821,7 @@ func hasString(strings []string, s string) bool {
 // build is the action for building a single package or command.
 func (b *builder) build(a *action) (err error) {
 
-	//fmt.Printf("build %s\n", a)
+	fmt.Printf("#BUILD %v\n", a.p.GoFiles)
 	
 	// Return an error if the package has CXX files but it's not using
 	// cgo nor SWIG, since the CXX files can only be processed by cgo
@@ -972,24 +972,26 @@ func (b *builder) build(a *action) (err error) {
 	}
 
 	// Prepare Go import path list.
+	//fmt.Printf("#INC0: %v\n", a.deps)
 	inc := b.includeArgs("-I", a.deps)
 
+	fmt.Printf("#INC1: %v\n", inc)
 	fmt.Printf("#COMPILE %v\n", gofiles)
 	fmt.Printf("#COMPILEDIR %v\n", a.p.ImportPath)
 
-	var gofiles2 []string
-	for _, file := range gofiles {
-		gofiles2 = append(gofiles2,
-			filepath.Join(
-				"$(GOPATH)",
-				"src",
-				a.p.ImportPath,
-				file))
-	}
-	fmt.Printf("#COMPILE2 %v\n", gofiles2)
+	// var gofiles2 []string
+	// for _, file := range gofiles {
+	// 	gofiles2 = append(gofiles2,
+	// 		filepath.Join(
+	// 			" $(GOPATH)",
+	// 			"src",
+	// 			a.p.ImportPath,
+	// 			file))
+	// }
+	// fmt.Printf("#COMPILE2 %v\n", gofiles2)
 	
 	// Compile Go.
-	ofile, out, err := buildToolchain.gc(b, a.p, a.objpkg, obj, len(sfiles) > 0, inc, gofiles2)
+	ofile, out, err := buildToolchain.gc(b, a.p, a.objpkg, obj, len(sfiles) > 0, inc, gofiles)
 	if len(out) > 0 {
 		b.showOutput(a.p.Dir, a.p.ImportPath, b.processOutput(out))
 		if err != nil {
@@ -1167,7 +1169,11 @@ func (b *builder) includeArgs(flag string, all []*action) []string {
 	for _, a1 := range all {
 		if dir := a1.pkgdir; dir != a1.p.build.PkgRoot && !incMap[dir] {
 			incMap[dir] = true
-			inc = append(inc, flag, dir)
+
+			if fi, err := os.Stat(dir); err == nil {
+				if fi.IsDir() {
+					inc = append(inc, flag, dir)
+				}}
 		}
 	}
 
@@ -1187,7 +1193,12 @@ func (b *builder) includeArgs(flag string, all []*action) []string {
 					dir += "_" + buildContext.InstallSuffix
 				}
 			}
-			inc = append(inc, flag, dir)
+
+			if fi, err := os.Stat(dir); err == nil {
+				if fi.IsDir() {
+					inc = append(inc, flag, dir)
+				}
+			}
 		}
 	}
 
@@ -1329,13 +1340,13 @@ func isObject(s string) bool {
 func (b *builder) fmtcmd(dir string, format string, args ...interface{}) string {
 	cmd := fmt.Sprintf(format, args...)
 	//fmt.Printf("#"+format+"\n", args...)
-	if dir != "" && dir != "/" {
-		cmd = strings.Replace(" "+cmd, " "+dir, " .", -1)[1:]
+	//if dir != "" && dir != "/" {
+		// cmd = strings.Replace(" "+cmd, " "+dir, " .", -1)[1:] // replace
 		// if b.scriptDir != dir {
 		// 	b.scriptDir = dir
 		// 	cmd = "cd " + dir + "\n" + cmd
 		// }
-	}
+	//}
 	if b.work != "" {
 		cmd = strings.Replace(cmd, b.work, "$(WORK)", -1)
 	}
@@ -1951,8 +1962,14 @@ func (tools gccgoToolchain) gc(b *builder, p *Package, archive, obj string, asmh
 		gcargs = append(gcargs, "-fgo-pkgpath="+pkgpath)
 	}
 
-	out := gccgoPkgpath(p) + ".o"
-	ofile = "$(GOPATH)/src/" + obj + out
+
+	pkgpath := gccgoPkgpath(p)
+	fmt.Printf("#PKGPATH %s\n", pkgpath)
+	out := pkgpath + ".o"
+	fmt.Printf("#OUT %s\n", out)
+	fmt.Printf("#OBJ %s\n", obj)
+	ofile = "$(GOPATH)/src/" +  out
+	fmt.Printf("#OFILE %s\n", ofile)
 
 	
 	if p.localPrefix != "" {
@@ -1965,14 +1982,19 @@ func (tools gccgoToolchain) gc(b *builder, p *Package, archive, obj string, asmh
 	var prereq=""
 	for _, f := range gofiles {
 		absdir := mkAbs(p.Dir, f)
-		fmt.Printf("#DEP %s\n", absdir)
+		fmt.Printf("#DEPa1 %s\n", absdir)
 		args = append(args, absdir)
 
+		var part string =  strings.Replace(absdir, buildContext.GOPATH, "$(GOPATH)", -1)
+
+		fmt.Printf("#DEPa1 %s\n", part)
+		
 		// now replace the gopath
-		prereq = prereq + strings.Replace(absdir, buildContext.GOPATH, "$(GOPATH)", -1)
+		prereq = prereq + " "+ part
 	}
 
 	fmt.Printf("#BUILD RULE for %s\n%s : %s\n", p.Name, ofile, prereq)
+	fmt.Printf("#BUILD2 %s\n", args)
 	
 	//fmt.Printf("#COMPILER args %s\n", args)
 	//fmt.Printf("#COMPILER dir %s\n", p.Dir)
@@ -1988,6 +2010,9 @@ func (tools gccgoToolchain) asm(b *builder, p *Package, obj, ofile, sfile string
 		defs = append(defs, `-D`, `GOPKGPATH="`+pkgpath+`"`)
 	}
 	defs = append(defs, b.gccArchArgs()...)
+
+	fmt.Printf("#INC2: %s\n", obj)
+	
 	return b.run(p.Dir, p.ImportPath, nil, tools.compiler(), "-I", obj, "-o", ofile, defs, sfile)
 }
 

@@ -235,7 +235,7 @@ func makeImportValid(r rune) rune {
 // It returns a *Package describing the package found in that directory.
 func loadImport(path string, srcDir string, stk *importStack, importPos []token.Position) *Package {
 
-     fmt.Printf("#IMPORT %s\n",path)
+	//fmt.Printf("#IMPORT %s\n",path)
 
 	stk.push(path)
 	defer stk.pop()
@@ -568,9 +568,13 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 
 	p.allgofiles = stringList(p.IgnoredGoFiles)
 	for i := range p.allgofiles {
+		//fmt.Printf("#CHECK %s\n",p.allgofiles[i])
 		p.allgofiles[i] = filepath.Join(p.Dir, p.allgofiles[i])
+		//fmt.Printf("#CHECK2 %s\n",p.allgofiles[i])
 	}
 	p.allgofiles = append(p.allgofiles, p.gofiles...)
+
+	fmt.Printf("#CHECK2 %s\n",p.allgofiles)
 	sort.Strings(p.allgofiles)
 
 	// Check for case-insensitive collision of input files.
@@ -623,8 +627,10 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 			importPaths[i] = path
 		}
 		deps[path] = p1
+		//fmt.Printf("#IMPORT %s\n", p1)
 		imports = append(imports, p1)
 		for _, dep := range p1.deps {
+			//fmt.Printf("#IMPORT2 %s\n", dep)
 			deps[dep.ImportPath] = dep
 		}
 		if p1.Incomplete {
@@ -635,6 +641,9 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 
 	p.Deps = make([]string, 0, len(deps))
 	for dep := range deps {
+
+		fmt.Printf("#DEP2 %s\n", dep)
+		
 		p.Deps = append(p.Deps, dep)
 	}
 	sort.Strings(p.Deps)
@@ -647,6 +656,7 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 		if p1.Error != nil {
 			p.DepsErrors = append(p.DepsErrors, p1.Error)
 		}
+		//fmt.Printf("#DEP3 %s\n", p1)
 	}
 
 	// unsafe is a fake package.

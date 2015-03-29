@@ -17,7 +17,7 @@ Makefile.image: gocc
 
 
 testmake : Makefile.image
-	make -f Makefile.image GOPATH=~/testgo2
+	cd ~/testgo2 && make -f ~/go/src/Makefile.image GOPATH=~/testgo2 ~/testgo2/src/github.com/h4ck3rm1k3/gocore/image.o
 
 tooldir: gocc
 	echo $(GOTOOLDIR)
