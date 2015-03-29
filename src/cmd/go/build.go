@@ -270,6 +270,9 @@ func (v *stringsFlag) String() string {
 }
 
 func runBuild(cmd *Command, args []string) {
+
+	//fmt.Println("runBuild %v %v", cmd, args)
+	
 	raceInit()
 	var b builder
 	b.init()
@@ -319,6 +322,9 @@ func runBuild(cmd *Command, args []string) {
 	for _, p := range packages(args) {
 		a.deps = append(a.deps, b.action(modeBuild, depMode, p))
 	}
+
+	//fmt.Println("deps %v", a.deps)
+	
 	b.do(a)
 }
 
@@ -474,7 +480,7 @@ var (
 )
 
 func (b *builder) init() {
-	var err error
+	//var err error
 	b.print = func(a ...interface{}) (int, error) {
 		return fmt.Fprint(os.Stderr, a...)
 	}
@@ -482,18 +488,20 @@ func (b *builder) init() {
 	b.mkdirCache = make(map[string]bool)
 
 	if buildN {
-		b.work = "$WORK"
+		b.work = "$(WORK)"
 	} else {
-		b.work, err = ioutil.TempDir("", "go-build")
-		if err != nil {
-			fatalf("%s", err)
-		}
+		// use the gopath/src for the root.
+		b.work = filepath.Join(buildContext.GOPATH ) 
+		//b.work, err = ioutil.TempDir("", "go-build")
+		//if err != nil {
+		//	fatalf("%s", err)
+		//}
 		if buildX || buildWork {
 			fmt.Fprintf(os.Stderr, "WORK=%s\n", b.work)
 		}
 		if !buildWork {
-			workdir := b.work
-			atexit(func() { os.RemoveAll(workdir) })
+			//workdir := b.work
+			//atexit(func() { os.RemoveAll(workdir) })
 		}
 	}
 }
@@ -642,7 +650,8 @@ func (b *builder) action(mode buildMode, depMode buildMode, p *Package) *action 
 	if work == "" {
 		work = b.work
 	}
-	a.objdir = filepath.Join(work, a.p.ImportPath, "_obj") + string(filepath.Separator)
+	//a.objdir = filepath.Join(work, a.p.ImportPath, "_obj") + string(filepath.Separator)
+	a.objdir = filepath.Join( a.p.ImportPath) + string(filepath.Separator)
 	a.objpkg = buildToolchain.pkgpath(work, a.p)
 	a.link = p.Name == "main"
 
@@ -811,6 +820,9 @@ func hasString(strings []string, s string) bool {
 
 // build is the action for building a single package or command.
 func (b *builder) build(a *action) (err error) {
+
+	//fmt.Printf("build %s\n", a)
+	
 	// Return an error if the package has CXX files but it's not using
 	// cgo nor SWIG, since the CXX files can only be processed by cgo
 	// and SWIG.
@@ -962,8 +974,22 @@ func (b *builder) build(a *action) (err error) {
 	// Prepare Go import path list.
 	inc := b.includeArgs("-I", a.deps)
 
+	fmt.Printf("#COMPILE %v\n", gofiles)
+	fmt.Printf("#COMPILEDIR %v\n", a.p.ImportPath)
+
+	var gofiles2 []string
+	for _, file := range gofiles {
+		gofiles2 = append(gofiles2,
+			filepath.Join(
+				"$(GOPATH)",
+				"src",
+				a.p.ImportPath,
+				file))
+	}
+	fmt.Printf("#COMPILE2 %v\n", gofiles2)
+	
 	// Compile Go.
-	ofile, out, err := buildToolchain.gc(b, a.p, a.objpkg, obj, len(sfiles) > 0, inc, gofiles)
+	ofile, out, err := buildToolchain.gc(b, a.p, a.objpkg, obj, len(sfiles) > 0, inc, gofiles2)
 	if len(out) > 0 {
 		b.showOutput(a.p.Dir, a.p.ImportPath, b.processOutput(out))
 		if err != nil {
@@ -1020,13 +1046,13 @@ func (b *builder) build(a *action) (err error) {
 	}
 
 	// Assemble .s files.
-	for _, file := range sfiles {
-		out := file[:len(file)-len(".s")] + "." + objExt
-		if err := buildToolchain.asm(b, a.p, obj, obj+out, file); err != nil {
-			return err
-		}
-		objects = append(objects, out)
-	}
+	// for _, file := range sfiles {
+	// 	out := file[:len(file)-len(".s")] + "." + objExt
+	// 	if err := buildToolchain.asm(b, a.p, obj, obj+out, file); err != nil {
+	// 		return err
+	// 	}
+	// 	objects = append(objects, out)
+	// }
 
 	// NOTE(rsc): On Windows, it is critically important that the
 	// gcc-compiled objects (cgoObjects) be listed after the ordinary
@@ -1045,9 +1071,9 @@ func (b *builder) build(a *action) (err error) {
 	// If the Go compiler wrote an archive and the package is entirely
 	// Go sources, there is no pack to execute at all.
 	if len(objects) > 0 {
-		if err := buildToolchain.pack(b, a.p, obj, a.objpkg, objects); err != nil {
-			return err
-		}
+		// if err := buildToolchain.pack(b, a.p, obj, a.objpkg, objects); err != nil {
+		// 	return err
+		// }
 	}
 
 	// Link if needed.
@@ -1118,8 +1144,8 @@ func (b *builder) install(a *action) (err error) {
 	// with aggressive buffering, cleaning incrementally like
 	// this keeps the intermediate objects from hitting the disk.
 	if !buildWork {
-		defer os.RemoveAll(a1.objdir)
-		defer os.Remove(a1.target)
+		//defer os.RemoveAll(a1.objdir)
+		//defer os.Remove(a1.target)
 	}
 
 	return b.moveOrCopyFile(a, a.target, a1.target, perm)
@@ -1305,15 +1331,15 @@ func (b *builder) fmtcmd(dir string, format string, args ...interface{}) string 
 	//fmt.Printf("#"+format+"\n", args...)
 	if dir != "" && dir != "/" {
 		cmd = strings.Replace(" "+cmd, " "+dir, " .", -1)[1:]
-		if b.scriptDir != dir {
-			b.scriptDir = dir
-			cmd = "cd " + dir + "\n" + cmd
-		}
+		// if b.scriptDir != dir {
+		// 	b.scriptDir = dir
+		// 	cmd = "cd " + dir + "\n" + cmd
+		// }
 	}
 	if b.work != "" {
-		cmd = strings.Replace(cmd, b.work, "$WORK", -1)
+		cmd = strings.Replace(cmd, b.work, "$(WORK)", -1)
 	}
-	return cmd
+	return "\t" + cmd
 }
 
 // showcmd prints the given command to standard output
@@ -1544,7 +1570,7 @@ func (b *builder) mkdir(dir string) error {
 	b.mkdirCache[dir] = true
 
 	if buildN || buildX {
-		b.showcmd("", "mkdir -p %s", dir)
+		b.showcmd("", "#mkdir -p %s", dir)
 		if buildN {
 			return nil
 		}
@@ -1566,7 +1592,7 @@ func mkAbs(dir, f string) string {
 	// Also, during -n mode we use the pseudo-directory $WORK
 	// instead of creating an actual work directory that won't be used.
 	// Leave paths beginning with $WORK alone too.
-	if filepath.IsAbs(f) || strings.HasPrefix(f, "$WORK") {
+	if filepath.IsAbs(f) || strings.HasPrefix(f, "$(WORK)") {
 		return f
 	}
 	return filepath.Join(dir, f)
@@ -1690,7 +1716,9 @@ func (gcToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr bool, 
 		args = append(args, "-asmhdr", obj+"go_asm.h")
 	}
 	for _, f := range gofiles {
-		args = append(args, mkAbs(p.Dir, f))
+		//args = append(args, mkAbs(p.Dir, f))
+		fmt.Printf("#check %s\n",f)
+		args = append(args, f)
 	}
 
 	output, err = b.runOut(p.Dir, p.ImportPath, nil, args...)
@@ -1916,23 +1944,39 @@ func (gccgoToolchain) linker() string {
 }
 
 func (tools gccgoToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr bool, importArgs []string, gofiles []string) (ofile string, output []byte, err error) {
-	out := "_go_.o"
-	ofile = obj + out
+	//fmt.Printf("#COMPILER GOFILES %s\n", gofiles)
 	gcargs := []string{"-g"}
 	gcargs = append(gcargs, b.gccArchArgs()...)
 	if pkgpath := gccgoPkgpath(p); pkgpath != "" {
 		gcargs = append(gcargs, "-fgo-pkgpath="+pkgpath)
 	}
+
+	out := gccgoPkgpath(p) + ".o"
+	ofile = "$(GOPATH)/src/" + obj + out
+
+	
 	if p.localPrefix != "" {
 		gcargs = append(gcargs, "-fgo-relative-import-path="+p.localPrefix)
 	}
 	var compiler = tools.compiler()
 	fmt.Printf("#COMPILER %s\n", compiler)
 	args := stringList(compiler, importArgs, "-c", gcargs, "-o", ofile, buildGccgoflags)
+
+	var prereq=""
 	for _, f := range gofiles {
-		args = append(args, mkAbs(p.Dir, f))
+		absdir := mkAbs(p.Dir, f)
+		fmt.Printf("#DEP %s\n", absdir)
+		args = append(args, absdir)
+
+		// now replace the gopath
+		prereq = prereq + strings.Replace(absdir, buildContext.GOPATH, "$(GOPATH)", -1)
 	}
 
+	fmt.Printf("#BUILD RULE for %s\n%s : %s\n", p.Name, ofile, prereq)
+	
+	//fmt.Printf("#COMPILER args %s\n", args)
+	//fmt.Printf("#COMPILER dir %s\n", p.Dir)
+	//fmt.Printf("#COMPILER path %s\n", p.ImportPath)
 	output, err = b.runOut(p.Dir, p.ImportPath, nil, args)
 	return ofile, output, err
 }

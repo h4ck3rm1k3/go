@@ -1,11 +1,23 @@
-export LD_LIBRARY_PATH := $(HOME)/gcc-1/build/powerpc64le-unknown-linux-gnu/libgo/.libs/:$(HOME)/gcc-1/build/gcc/:/home/h4ck3rm1k3/install/libexec/gcc/powerpc64le-unknown-linux-gnu/5.0.0/
+#export LD_LIBRARY_PATH := $(HOME)/gcc-1/build/powerpc64le-unknown-linux-gnu/libgo/.libs/:$(HOME)/gcc-1/build/gcc/:/home/h4ck3rm1k3/install/libexec/gcc/powerpc64le-unknown-linux-gnu/5.0.0/
+export LD_LIBRARY_PATH := $(HOME)/install/lib64/
 export PATH := $(HOME)/install/bin:$(PATH)
-export GCCGO := gccgo --verbose -save-temps -O0 -L$(HOME)/gcc-1/build/powerpc64le-unknown-linux-gnu/libgo/
-export GOTOOLDIR := $(HOME)/gcc-1/build/powerpc64le-unknown-linux-gnu
-export GOBIN := $(HOME)/gcc-1/build/powerpc64le-unknown-linux-gnu
-export GOPATH := $(HOME)/go/src
+export GCCGO := gccgo
+#--verbose -save-temps
+export GOFLAGS :=  -O0 -L$(HOME)/gcc-1/build/powerpc64le-unknown-linux-gnu/libgo/
+#export GOTOOLDIR := $(HOME)/gcc-1/build/powerpc64le-unknown-linux-gnu
+#export GOBIN := $(HOME)/gcc-1/build/powerpc64le-unknown-linux-gnu
+#export GOPATH := $(HOME)/go/src
+export GOPATH := $(HOME)/testgo2
 export GOROOT := $(HOME)/go
-export WORK := /tmp/gccgo/work
+#export WORK := /tmp/gccgo/work
+
+Makefile.image: gocc
+	~/go/src/gocc build -n -v -a  -work  -compiler gccgo github.com/h4ck3rm1k3/gocore/image/ > Makefile.image 2>&1 
+#	 -gccgoflags '-c --verbose -save-temps -O0  '
+
+
+testmake : Makefile.image
+	make -f Makefile.image GOPATH=~/testgo2
 
 tooldir: gocc
 	echo $(GOTOOLDIR)
@@ -26,14 +38,15 @@ bootstrap2:
 all:  dist.6
 
 go/build.o: go/build/build.go go/build/doc.go go/build/read.go go/build/syslist.go
-	$(GCCGO) -c -g -o go/build.o  $^
+	$(GCCGO) $(GOFLAGS) -c -g -o go/build.o  $^
 
 
 gocc :  cmd/go/main.go   cmd/go/generate.go		cmd/go/match_test.go	  cmd/go/test.go cmd/go/build.go      cmd/go/generate_test.go	cmd/go/pkg.go		  cmd/go/testgo.go cmd/go/clean.go      cmd/go/get.go		cmd/go/pkg_test.go	  cmd/go/tool.go cmd/go/context.go    cmd/go/go11.go		cmd/go/run.go		  cmd/go/vcs.go  cmd/go/discovery.go  cmd/go/go_windows_test.go	cmd/go/signal.go	  cmd/go/vcs_test.go  cmd/go/doc.go	     cmd/go/help.go	  cmd/go/version.go cmd/go/env.go	     cmd/go/http.go		cmd/go/signal_unix.go	  cmd/go/vet.go cmd/go/fix.go	     cmd/go/list.go		cmd/go/tag_test.go cmd/go/fmt.go	     cmd/go/main.go		cmd/go/testflag.go	cmd/go/generated.go
-	$(GCCGO)  -g  -o gocc cmd/go/main.go   cmd/go/generate.go		cmd/go/match_test.go	  cmd/go/test.go cmd/go/build.go      cmd/go/generate_test.go	cmd/go/pkg.go		  cmd/go/testgo.go cmd/go/clean.go      cmd/go/get.go		cmd/go/pkg_test.go	  cmd/go/tool.go cmd/go/context.go    cmd/go/go11.go		cmd/go/run.go		  cmd/go/vcs.go  cmd/go/discovery.go  cmd/go/go_windows_test.go	cmd/go/signal.go	  cmd/go/vcs_test.go  cmd/go/doc.go	     cmd/go/help.go	  cmd/go/version.go cmd/go/env.go	     cmd/go/http.go		cmd/go/signal_unix.go	  cmd/go/vet.go cmd/go/fix.go	     cmd/go/list.go		cmd/go/tag_test.go cmd/go/fmt.go	     cmd/go/testflag.go		cmd/go/generated.go
+	$(GCCGO) $(GOFLAGS) -g  -o gocc cmd/go/main.go   cmd/go/generate.go		cmd/go/match_test.go	  cmd/go/test.go cmd/go/build.go      cmd/go/generate_test.go	cmd/go/pkg.go		  cmd/go/testgo.go cmd/go/clean.go      cmd/go/get.go		cmd/go/pkg_test.go	  cmd/go/tool.go cmd/go/context.go    cmd/go/go11.go		cmd/go/run.go		  cmd/go/vcs.go  cmd/go/discovery.go  cmd/go/go_windows_test.go	cmd/go/signal.go	  cmd/go/vcs_test.go  cmd/go/doc.go	     cmd/go/help.go	  cmd/go/version.go cmd/go/env.go	     cmd/go/http.go		cmd/go/signal_unix.go	  cmd/go/vet.go cmd/go/fix.go	     cmd/go/list.go		cmd/go/tag_test.go cmd/go/fmt.go	     cmd/go/testflag.go		cmd/go/generated.go
 
 trycgo: ./gocc
-	./gocc build -v -x -compiler gccgo -work -n -a runtime/cgo
+	./gocc build -v -x -compiler gccgo -work  -a image
+	./gocc build -v -x -compiler gccgo -work -n -a image
 
 trycgo2: ./gocc
 	strace -o strace.txt -f -s9999  ./gocc build -gccgoflags '-save-temps --verbose' -v -x -compiler gccgo -work -n -a runtime/cgo
