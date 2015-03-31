@@ -642,7 +642,7 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 	p.Deps = make([]string, 0, len(deps))
 	for dep := range deps {
 
-		fmt.Printf("#DEP2 %s\n", dep)
+		fmt.Printf("#DEP(%s,%s)\n", p.Name,dep)
 		
 		p.Deps = append(p.Deps, dep)
 	}

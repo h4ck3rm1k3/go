@@ -11,8 +11,11 @@ export GOPATH := $(HOME)/testgo2
 export GOROOT := $(HOME)/go
 #export WORK := /tmp/gccgo/work
 
-Makefile.image: gocc
-	~/go/src/gocc build -n -v -a  -work  -compiler gccgo github.com/h4ck3rm1k3/gocore/image/ > Makefile.image 2>&1 
+deps : Makefile.all
+	python dep.py Makefile.all
+
+Makefile.all2: gocc
+	~/go/src/gocc build -x -n -v -a  -work  -compiler gccgo github.com/h4ck3rm1k3/gocore/... > Makefile.all 2>&1 
 #	 -gccgoflags '-c --verbose -save-temps -O0  '
 
 

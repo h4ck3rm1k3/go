@@ -323,7 +323,7 @@ func runBuild(cmd *Command, args []string) {
 		a.deps = append(a.deps, b.action(modeBuild, depMode, p))
 	}
 
-	fmt.Println("#DEPS  %v", a.deps)
+	//fmt.Println("#DEPS(%s,%v)", pkgs[0].Name, a.deps)
 	
 	b.do(a)
 }
