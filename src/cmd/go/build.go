@@ -930,12 +930,15 @@ func (b *builder) build(a *action) (err error) {
 		if a.cgo != nil && a.cgo.target != "" {
 			cgoExe = a.cgo.target
 		}
-		outGo, outObj, err := b.cgo(a.p, cgoExe, obj, pcCFLAGS, pcLDFLAGS, cgofiles, gccfiles, cxxfiles, a.p.MFiles)
-		if err != nil {
-			return err
+		runcgo := false
+		if runcgo {
+			outGo, outObj, err := b.cgo(a.p, cgoExe, obj, pcCFLAGS, pcLDFLAGS, cgofiles, gccfiles, cxxfiles, a.p.MFiles)
+			if err != nil {
+				return err
+			}
+			cgoObjects = append(cgoObjects, outObj...)
+			gofiles = append(gofiles, outGo...)
 		}
-		cgoObjects = append(cgoObjects, outObj...)
-		gofiles = append(gofiles, outGo...)
 	}
 
 	if len(gofiles) == 0 {
@@ -1963,12 +1966,17 @@ func (tools gccgoToolchain) gc(b *builder, p *Package, archive, obj string, asmh
 	}
 
 
-	pkgpath := gccgoPkgpath(p)
-	fmt.Printf("#PKGPATH %s\n", pkgpath)
-	out := pkgpath + ".o"
-	fmt.Printf("#OUT %s\n", out)
+	// MAKEFILE
+	pkgpath2 := gccgoPkgpath(p)
+	if (pkgpath2 == "") {
+		pkgpath2 = filepath.Dir(obj)
+	}
+	
+	fmt.Printf("#PKGPATH :%s\n", pkgpath2)
+	out2 := pkgpath2 + ".o"
+	fmt.Printf("#OUT %s\n", out2)
 	fmt.Printf("#OBJ %s\n", obj)
-	ofile = "$(GOPATH)/src/" +  out
+	ofile = "$(GOPATH)/src/" +  out2
 	fmt.Printf("#OFILE %s\n", ofile)
 
 	
@@ -1993,6 +2001,7 @@ func (tools gccgoToolchain) gc(b *builder, p *Package, archive, obj string, asmh
 		prereq = prereq + " "+ part
 	}
 
+	// emit makefile
 	fmt.Printf("#BUILD RULE for %s\n%s : %s\n", p.Name, ofile, prereq)
 	fmt.Printf("#BUILD2 %s\n", args)
 	

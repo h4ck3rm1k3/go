@@ -12,9 +12,9 @@ export GOROOT := $(HOME)/go
 #export WORK := /tmp/gccgo/work
 
 deps : Makefile.all
-	python dep.py Makefile.all
+	python dep.py Makefile.all > ~/testgo2/Makefile.all
 
-Makefile.all2: gocc
+Makefile.all: gocc
 	~/go/src/gocc build -x -n -v -a  -work  -compiler gccgo github.com/h4ck3rm1k3/gocore/... > Makefile.all 2>&1 
 #	 -gccgoflags '-c --verbose -save-temps -O0  '
 

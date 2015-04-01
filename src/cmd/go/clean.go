@@ -112,7 +112,7 @@ func clean(p *Package) {
 	cleaned[p] = true
 
 	if p.Dir == "" {
-		errorf("can't load package: %v", p.Error)
+		errorf("clean: can't load package: %v", p.Error)
 		return
 	}
 	dirs, err := ioutil.ReadDir(p.Dir)
