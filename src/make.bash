@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+
+export LD_LIBRARY_PATH=${HOME}/install/lib64
+export PATH=${PATH}:${HOME}/install/bin
+export GOROOT_BOOTSTRAP=${HOME}/go
+#export GOROOT=$(HOME)/go
+
 # Copyright 2009 The Go Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
@@ -112,13 +118,14 @@ rm -f ./runtime/runtime_defs.go
 echo '##### Building Go bootstrap tool.'
 echo cmd/dist
 export GOROOT="$(cd .. && pwd)"
-GOROOT_BOOTSTRAP=${GOROOT_BOOTSTRAP:-$HOME/go1.4}
+#GOROOT_BOOTSTRAP=${GOROOT_BOOTSTRAP}
 if [ ! -x "$GOROOT_BOOTSTRAP/bin/go" ]; then
 	echo "ERROR: Cannot find $GOROOT_BOOTSTRAP/bin/go." >&2
 	echo "Set \$GOROOT_BOOTSTRAP to a working Go tree >= Go 1.4." >&2
 fi
 rm -f cmd/dist/dist
-GOROOT="$GOROOT_BOOTSTRAP" GOOS="" GOARCH="" "$GOROOT_BOOTSTRAP/bin/go" build -o cmd/dist/dist ./cmd/dist
+#GOROOT="$GOROOT_BOOTSTRAP" GOOS="" GOARCH="" "$GOROOT_BOOTSTRAP/bin/go" build -x -n -o cmd/dist/dist ./cmd/dist
+GOROOT="$GOROOT_BOOTSTRAP" GOOS="" GOARCH="" bash -x builddist.sh
 
 # -e doesn't propagate out of eval, so check success by hand.
 eval $(./cmd/dist/dist env -p || echo FAIL=true)

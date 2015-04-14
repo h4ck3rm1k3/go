@@ -42,3 +42,26 @@ VERSION.cache
 
 bin/
 pkg/
+/#Makefile#
+/build/
+/doc/go1.5.txt.BACKUP.101173.txt
+/doc/go1.5.txt.BASE.101173.txt
+/doc/go1.5.txt.LOCAL.101173.txt
+/doc/go1.5.txt.REMOTE.101173.txt
+/src/#Makefile.image#
+/src/#make.bash#
+/src/#mdupont.txt#
+/src/.#mdupont.txt
+/src/cmd/cgo/ast.go.dump.ast
+/src/cmd/dist/#buildtool.go#
+/src/cmd/dist/dist
+/src/cgox
+/src/dep.txt
+/src/gocc
+/src/lib.h
+/src/mdupont.txt
+/src/sometest.s
+/src/test123.go
+/src/total.go
+/src/Makefile.image.txt
+/src/total.txt

@@ -78,10 +78,17 @@ var outputLock sync.Mutex
 // Background job. Only bgrun should use the Background mode,
 // not other callers.
 func run(dir string, mode int, cmd ...string) string {
-	if vflag > 1 {
-		errprintf("run: %s\n", strings.Join(cmd, " "))
-	}
+	//if vflag > 1 {
+	errprintf("GOROOT=%s\n",os.Getenv("GOROOT"))
+	errprintf("GOPATH=%s\n",os.Getenv("GOPATH"))
+	errprintf("GOBIN=%s\n",os.Getenv("GOBIN"))
+	errprintf("GOOS=%s\n",os.Getenv("GOOS"))
+	errprintf("GOHOSTOS=%s\n",os.Getenv("GOHOSTOS"))
+	errprintf("GOARCH=%s\n",os.Getenv("GOARCH"))
+	errprintf("GOHOSTARCH=%s\n",os.Getenv("GOHOSTARCH"))
 
+	errprintf("run: %s %s\n", dir, strings.Join(cmd, " "))
+	//}
 	xcmd := exec.Command(cmd[0], cmd[1:]...)
 	xcmd.Dir = dir
 	var data []byte

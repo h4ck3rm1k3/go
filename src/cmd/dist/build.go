@@ -563,6 +563,7 @@ func install(dir string) {
 		if dir == dt.prefix || strings.HasSuffix(dt.prefix, "/") && strings.HasPrefix(dir, dt.prefix) {
 			for _, p := range dt.dep {
 				p = os.ExpandEnv(p)
+				fmt.Printf("DEBUG1: %v\n",p)
 				files = append(files, p)
 			}
 		}
@@ -709,6 +710,7 @@ func install(dir string) {
 			b = b[:len(b)-1] + "o"
 		}
 		compile = append(compile, "-o", b, p)
+		fmt.Printf("DEBUG COMPILE: %v $v\n",path,compile)
 		bgrun(path, compile...)
 
 		link = append(link, b)
