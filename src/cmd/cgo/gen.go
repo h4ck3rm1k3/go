@@ -1,2 +1,2 @@
 package main
-const defaultCC="gcc"
+//const defaultCC="gcc"

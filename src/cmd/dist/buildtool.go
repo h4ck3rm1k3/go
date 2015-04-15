@@ -110,7 +110,11 @@ func bootstrapBuildTools() {
 	os.Setenv("GOHOSTARCH", "")
 
 	// Run Go 1.4 to build binaries.
-	run(workspace, ShowOutput|CheckExit, pathf("%s/bin/go", goroot_bootstrap), "build","-n -v -x -work", "bootstrap/...")
+	run(workspace, ShowOutput|CheckExit, pathf("%s/bin/go", goroot_bootstrap), "build",
+//		"-n",
+		"-compiler","gccgo",
+		"-v",
+		"bootstrap/...")
 	run(workspace, ShowOutput|CheckExit, pathf("%s/bin/go", goroot_bootstrap), "install", "bootstrap/...")
 
 	// Copy binaries into tool binary directory.

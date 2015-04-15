@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-
+export GOTOOLDIR=${HOME}/install/bin
+export GCCGO=${HOME}/install/bin/gccgo
 export LD_LIBRARY_PATH=${HOME}/install/lib64
 export PATH=${PATH}:${HOME}/install/bin
 export GOROOT_BOOTSTRAP=${HOME}/go
