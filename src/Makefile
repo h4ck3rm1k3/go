@@ -1,5 +1,8 @@
 export LD_LIBRARY_PATH := $(HOME)/install/lib64/
-export GOROOT_BOOTSTRAP:= $(HOME)/install
+export GCCGO := $(HOME)/install/bin/gccgo
+export LD_LIBRARY_PATH := $(HOME)/install/lib64
+export PATH := $(PATH):$(HOME)/go/bin:$(HOME)/install/bin
+export GOROOT_BOOTSTRAP=$(HOME)/go
 #export GOROOT := /home/h4ck3rm1k3/go
 #export GOPATH := /home/h4ck3rm1k3/go/src
 #export GOROOT_BOOTSTRAP=~/gccgo_for_bootstrap

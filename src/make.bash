@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-export GOTOOLDIR=${HOME}/install/bin
+#export GOTOOLDIR=${HOME}/go/bin
 export GCCGO=${HOME}/install/bin/gccgo
 export LD_LIBRARY_PATH=${HOME}/install/lib64
-export PATH=${PATH}:${HOME}/install/bin
+export PATH=${PATH}:${HOME}/go/bin:${HOME}/install/bin
 export GOROOT_BOOTSTRAP=${HOME}/go
 #export GOROOT=$(HOME)/go
 

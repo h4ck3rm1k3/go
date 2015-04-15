@@ -111,7 +111,7 @@ func bootstrapBuildTools() {
 
 	// Run Go 1.4 to build binaries.
 	run(workspace, ShowOutput|CheckExit, pathf("%s/bin/go", goroot_bootstrap), "build",
-//		"-n",
+		"-n",
 		"-compiler","gccgo",
 		"-v",
 		"bootstrap/...")
